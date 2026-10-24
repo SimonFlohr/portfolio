@@ -1,1 +1,8 @@
+branch="$(git symbolic-ref --short HEAD 2>/dev/null)"
+if [ "$branch" = "main" ]; then
+  echo "husky > pre-commit: direct commits to 'main' are blocked."
+  echo "         Create a feature branch first:  git switch -c feat/<name>"
+  exit 1
+fi
+
 pnpm exec lint-staged
