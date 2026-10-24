@@ -1,0 +1,2 @@
+echo "husky > pre-push: lint + typecheck + build (mirrors CI)"
+pnpm verify
