@@ -1,1 +1,70 @@
 @import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  /* Polar Night */
+  --color-polar-0: #2e3440;
+  --color-polar-1: #3b4252;
+  --color-polar-2: #434c5e;
+  --color-polar-3: #4c566a;
+
+  /* Snow Storm — 0 is the primary text color */
+  --color-snow-0: #eceff4;
+  --color-snow-1: #e5e9f0;
+  --color-snow-2: #d8dee9;
+
+  /* Frost */
+  --color-frost-0: #8fbcbb;
+  --color-frost-1: #88c0d0;
+  --color-frost-2: #81a1c1;
+  --color-frost-3: #5e81ac;
+
+  /* Aurora */
+  --color-aurora-green: #a3be8c;
+  --color-aurora-yellow: #ebcb8b;
+  --color-aurora-red: #bf616a;
+  --color-aurora-purple: #b48ead;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--color-polar-0);
+    color: var(--color-snow-0);
+    scroll-padding-top: 6.5rem;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    opacity: 0.22;
+    mix-blend-mode: overlay;
+    background-image: url('./assets/grain.svg');
+    background-repeat: repeat;
+    background-size: 180px 180px;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-frost-3) 55%, transparent);
+    color: var(--color-snow-0);
+  }
+}
