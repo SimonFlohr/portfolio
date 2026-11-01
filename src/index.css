@@ -33,7 +33,7 @@
     color-scheme: dark;
     background-color: var(--color-polar-0);
     color: var(--color-snow-0);
-    scroll-padding-top: 6.5rem;
+    scroll-padding-top: calc(4.75rem + env(safe-area-inset-top, 0px));
     scroll-behavior: smooth;
   }
 

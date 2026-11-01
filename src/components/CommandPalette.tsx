@@ -191,7 +191,7 @@ function PaletteDialog({ onClose }: { onClose: () => void }) {
             aria-activedescendant={active ? `${listId}-${active.id}` : undefined}
             aria-label="Search commands"
             placeholder="Jump, copy, open…"
-            className="w-full bg-transparent py-3.5 text-sm text-snow-0 outline-none placeholder:text-snow-2/70"
+            className="w-full bg-transparent py-3.5 text-base text-snow-0 outline-none placeholder:text-snow-2/70"
             onChange={(event) => {
               setQuery(event.target.value)
               setIndex(0)
