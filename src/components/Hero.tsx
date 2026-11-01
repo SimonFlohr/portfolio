@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react'
 import { motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react'
-import { useRef, type MouseEvent, type ReactNode } from 'react'
+import { useRef, type MouseEvent, type PointerEvent, type ReactNode } from 'react'
 import portrait from '../assets/simon.jpg'
 import { hero, site } from '../data/portfolioData'
 import { AuthorClock } from './ui/AuthorClock'
@@ -225,8 +225,13 @@ function MagneticLink({
   const springX = useSpring(x, { stiffness: 260, damping: 18, mass: 0.4 })
   const springY = useSpring(y, { stiffness: 260, damping: 18, mass: 0.4 })
 
-  function onMouseMove(event: MouseEvent<HTMLAnchorElement>) {
-    if (reduce || !ref.current) return
+  function reset() {
+    x.set(0)
+    y.set(0)
+  }
+
+  function onPointerMove(event: PointerEvent<HTMLAnchorElement>) {
+    if (reduce || event.pointerType !== 'mouse' || !ref.current) return
     const rect = ref.current.getBoundingClientRect()
     x.set((event.clientX - (rect.left + rect.width / 2)) * 0.28)
     y.set((event.clientY - (rect.top + rect.height / 2)) * 0.4)
@@ -239,10 +244,11 @@ function MagneticLink({
       data-magnetic
       className={className}
       style={reduce ? undefined : { x: springX, y: springY }}
-      onMouseMove={onMouseMove}
-      onMouseLeave={() => {
-        x.set(0)
-        y.set(0)
+      onPointerMove={onPointerMove}
+      onPointerLeave={reset}
+      onPointerCancel={reset}
+      onPointerUp={(event) => {
+        if (event.pointerType !== 'mouse') reset()
       }}
     >
       {children}

@@ -19,10 +19,7 @@ function glowStyle(padding: string, radius: number, alpha: number) {
 
 export function SkillsBento() {
   return (
-    <section
-      id="skills"
-      className="scroll-mt-28 border-t border-snow-0/10 px-5 py-16 sm:px-8 sm:py-24"
-    >
+    <section id="skills" className="border-t border-snow-0/10 px-5 py-16 sm:px-8 sm:py-24">
       <div className="mx-auto max-w-5xl">
         <RevealOnScroll>
           <p className="font-mono text-xs tracking-[0.18em] text-frost-1 uppercase">Skills</p>

@@ -11,10 +11,7 @@ export function Timeline() {
   })
 
   return (
-    <section
-      id="journey"
-      className="scroll-mt-28 border-t border-snow-0/10 px-5 py-16 sm:px-8 sm:py-24"
-    >
+    <section id="journey" className="border-t border-snow-0/10 px-5 py-16 sm:px-8 sm:py-24">
       <div className="mx-auto max-w-5xl">
         <p className="font-mono text-xs tracking-[0.18em] text-frost-1 uppercase">Journey</p>
         <h2 className="mt-4 text-4xl font-medium tracking-tight text-snow-0 sm:text-5xl">

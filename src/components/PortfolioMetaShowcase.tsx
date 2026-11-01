@@ -25,10 +25,7 @@ const layers = [
 
 export function PortfolioMetaShowcase() {
   return (
-    <section
-      id="site"
-      className="scroll-mt-28 border-t border-snow-0/10 px-5 py-16 sm:px-8 sm:py-24"
-    >
+    <section id="site" className="border-t border-snow-0/10 px-5 py-16 sm:px-8 sm:py-24">
       <div className="mx-auto max-w-5xl">
         <RevealOnScroll>
           <p className="font-mono text-xs tracking-[0.18em] text-frost-1 uppercase">This site</p>

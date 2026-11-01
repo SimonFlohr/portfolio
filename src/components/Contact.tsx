@@ -55,10 +55,7 @@ export function Contact() {
   }
 
   return (
-    <footer
-      id="contact"
-      className="scroll-mt-28 border-t border-snow-0/10 px-5 py-16 sm:px-8 sm:py-24"
-    >
+    <footer id="contact" className="border-t border-snow-0/10 px-5 py-16 sm:px-8 sm:py-24">
       <div className="mx-auto max-w-5xl">
         <RevealOnScroll>
           <p className="font-mono text-xs tracking-[0.18em] text-frost-1 uppercase">Contact</p>
