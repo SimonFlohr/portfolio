@@ -39,15 +39,30 @@ export function PleckShowcase() {
             <h2 className="text-4xl font-medium tracking-tight text-snow-0 sm:text-5xl">
               {pleck.name}
             </h2>
-            <a
-              href={pleck.repoUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-snow-0/10 px-3 font-mono text-xs text-snow-2 hover:border-frost-1/40 hover:text-snow-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-frost-1"
-            >
-              {pleck.repoName}
-              <ArrowUpRight className="size-3.5" aria-hidden />
-            </a>
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                href={pleck.repoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-snow-0/10 px-3 font-mono text-xs text-snow-2 hover:border-frost-1/40 hover:text-snow-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-frost-1"
+              >
+                {pleck.repoName}
+                <ArrowUpRight className="size-3.5" aria-hidden />
+              </a>
+              <a
+                href={pleck.demoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-aurora-green px-4 text-sm font-medium text-polar-0 hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-frost-1"
+              >
+                <span className="relative flex size-1.5 shrink-0" aria-hidden>
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-polar-0 opacity-50 motion-reduce:animate-none" />
+                  <span className="relative size-1.5 rounded-full bg-polar-0" />
+                </span>
+                {pleck.demoLabel}
+                <ArrowUpRight className="size-3.5" aria-hidden />
+              </a>
+            </div>
           </div>
           <p className="mt-4 max-w-2xl text-xl text-snow-1">{pleck.tagline}</p>
           <p className="mt-3 max-w-2xl font-mono text-xs text-snow-2">{pleck.etymology}</p>
