@@ -41,6 +41,8 @@ export const pleck = {
   name: 'Pleck',
   repoName: 'pleck-web',
   repoUrl: 'https://github.com/SimonFlohr/pleck-web',
+  demoLabel: 'Try live demo',
+  demoUrl: 'https://getpleck.com/demo',
   etymology: 'From Dutch plek, a place or a spot, and the idiom alles op één plek.',
   tagline: 'One place. Nothing lost.',
   summary:
