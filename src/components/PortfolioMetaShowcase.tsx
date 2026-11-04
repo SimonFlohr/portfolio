@@ -1,9 +1,7 @@
-import { useState } from 'react'
+import { ArrowUpRight } from 'lucide-react'
 import { portfolioMeta, site } from '../data/portfolioData'
+import { CiBadge } from './ui/CiBadge'
 import { RevealOnScroll } from './ui/RevealOnScroll'
-
-const ciBadgeSrc =
-  'https://img.shields.io/github/actions/workflow/status/SimonFlohr/portfolio/ci.yml?branch=main&label=CI'
 
 const layers = [
   {
@@ -29,19 +27,37 @@ export function PortfolioMetaShowcase() {
       <div className="mx-auto max-w-5xl">
         <RevealOnScroll>
           <p className="font-mono text-xs tracking-[0.18em] text-frost-1 uppercase">This site</p>
-          <h2 className="mt-4 text-4xl font-medium tracking-tight text-snow-0 sm:text-5xl">
-            {portfolioMeta.name}
-          </h2>
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <h2 className="text-4xl font-medium tracking-tight text-snow-0 sm:text-5xl">
+                {portfolioMeta.name}
+              </h2>
+              <CiBadge
+                repo="portfolio"
+                actionsHref={`${portfolioMeta.repoUrl}/actions`}
+                label="Live CI status for this site on GitHub Actions"
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:ml-auto sm:justify-end">
+              <a
+                href={portfolioMeta.repoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-snow-0/10 px-3 font-mono text-xs text-snow-2 transition hover:border-frost-1/40 hover:text-snow-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-frost-1"
+              >
+                {portfolioMeta.repoName}
+                <ArrowUpRight className="size-3.5" aria-hidden />
+              </a>
+            </div>
+          </div>
           <p className="mt-5 max-w-3xl text-base leading-relaxed text-snow-2">
             {portfolioMeta.summary}
           </p>
         </RevealOnScroll>
 
         <div className="mt-8 grid grid-cols-2 items-stretch gap-2 sm:flex sm:flex-wrap">
-          <Metric label="Lighthouse" value={String(portfolioMeta.lighthouseTarget)} hint="target" />
           <Metric label="Gate" value={portfolioMeta.ci.command} hint="pre-push and CI" />
           <Metric label="Shortcut" value={portfolioMeta.shortcuts[0]} hint="command palette" />
-          <CiBadge />
         </div>
 
         <ol className="mt-6 grid gap-2 sm:grid-cols-4">
@@ -92,34 +108,5 @@ function Metric({ label, value, hint }: { label: string; value: string; hint: st
       <p className="font-mono text-sm text-snow-0">{value}</p>
       <p className="font-mono text-[10px] text-frost-1">{hint}</p>
     </div>
-  )
-}
-
-function CiBadge() {
-  const [failed, setFailed] = useState(false)
-
-  if (failed) {
-    return (
-      <span className="inline-flex h-full items-center rounded-xl border border-snow-0/10 bg-polar-1/40 px-3 py-2 font-mono text-xs text-snow-1">
-        CI · GitHub Actions
-      </span>
-    )
-  }
-
-  return (
-    <a
-      href="https://github.com/SimonFlohr/portfolio/actions"
-      target="_blank"
-      rel="noreferrer"
-      aria-label="Live CI status on GitHub Actions"
-      className="inline-flex h-full min-h-11 items-center rounded-xl border border-snow-0/10 bg-polar-1/40 px-3 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-frost-1"
-    >
-      <img
-        src={ciBadgeSrc}
-        alt="Live GitHub Actions status for the verify workflow on main"
-        className="h-5"
-        onError={() => setFailed(true)}
-      />
-    </a>
   )
 }

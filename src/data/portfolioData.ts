@@ -5,7 +5,7 @@ export const site = {
   url: 'https://simonflohr.dev',
   location: 'Des Moines, IA',
   workModes: ['Remote', 'Local'],
-  availability: 'Available for Full-Time SWE Roles',
+  availability: 'Available for local and remote SWE Roles',
   role: 'Software Engineer',
   roleFocus: ['Full-Stack', 'Frontend', 'Cloud'],
   email: 'simonflohr31@gmail.com',
@@ -28,8 +28,8 @@ export const navItems = [
 export type SectionId = (typeof navItems)[number]['id']
 
 export const hero = {
-  eyebrow: 'Des Moines, IA · Remote & local',
-  credentials: 'M.S. and B.S. in Software Engineering',
+  eyebrow: `📍 Des Moines, IA`,
+  credentials: '📚 M.S. & B.S. — Software Engineering',
   availability: site.availability,
   title: 'The interesting bugs show up later.',
   lede: 'I\u2019m a software engineer in Des Moines. This page is the work: a case study, the stack, and a way to get in touch.',
@@ -43,11 +43,11 @@ export const pleck = {
   repoUrl: 'https://github.com/SimonFlohr/pleck-web',
   demoLabel: 'Try live demo',
   demoUrl: 'https://getpleck.com/demo',
-  etymology: 'From Dutch plek, a place or a spot, and the idiom alles op één plek.',
-  tagline: 'One place. Nothing lost.',
+  etymology: "Derived from the Dutch word 'plek', meaning a place or spot.",
+  tagline: 'One family vault. Nothing lost.',
   summary:
     'A private, invite-only PWA. The family in this case study lives in the US and the Netherlands. The UI is English and Dutch. Members add sparks, which are photos and text. The home page is a day-grouped feed with search, and filters can be shared as a URL. v1 will open Pleck to families anywhere, in any combination of time zones.',
-  mvpNote: 'Voice notes are in the product language. They are not in this version.',
+  mvpNote: 'Voice notes will be added in v1. They are not in this version.',
   stack: [
     'Next.js 16',
     'TypeScript',
@@ -64,20 +64,20 @@ export const principles = [
   {
     id: 'one-place',
     index: '01',
-    title: 'One place for the whole archive',
-    body: 'Pleck does not send notifications. You open the feed to see what you missed.',
+    title: 'A persistent vault for the family',
+    body: "Pleck does not send notifications. You open the vault to see what's new.",
   },
   {
     id: 'conversation',
     index: '02',
-    title: 'Talking stays on WhatsApp',
-    body: 'Pleck has no replies or comments. The conversation stays on WhatsApp. Pleck keeps the photos and the notes.',
+    title: 'Talking stays off-platform',
+    body: 'Pleck has no replies or comments. The conversation stays off-platform. Pleck keeps the photos and the notes.',
   },
   {
     id: 'capture',
     index: '03',
     title: 'Save the metadata you cannot reconstruct',
-    body: 'At ingest Pleck stores the author time zone, the author\u2019s local date, the EXIF capture time (happened_at), a SHA-256 of the file, and the MIME type. S3 keeps versioned objects. A delete sets deleted_at and leaves the object.',
+    body: 'At insert, Pleck stores the author time zone, the author\u2019s local date, the EXIF capture time (happened_at), a SHA-256 of the file, and the MIME type. S3 keeps versioned objects. Deleting an object sets deleted_at and leaves the object.',
   },
 ] as const
 
@@ -109,18 +109,13 @@ export const readers = [
   language: string
 }[]
 
-/**
- * Fixed instant so the simulator does not depend on the visitor's clock.
- * 14 Jun 2026 is inside US CDT (UTC−5) and EU CEST (UTC+2): a 7-hour gap.
- * Simon's Sunday 18:55 in Chicago is Monday 01:55 in Amsterdam.
- */
 export const whoseDay = {
   problem:
-    'A Sunday dinner posted at 18:55 in the US (America/Chicago) is 01:55 Monday in Amsterdam (Europe/Amsterdam). Whose calendar day does it belong to?',
+    'A spark posted at 6:55 PM in (America/Chicago) is 01:55 AM on Monday in (Europe/Amsterdam). Whose calendar day does it belong to?',
   solution:
-    'At insert, Pleck stores author_timezone (an IANA name) and sets author_local_date with localDate(instant, zone). Postgres cannot do that in a GENERATED column. AT TIME ZONE is STABLE, and generated columns require IMMUTABLE, because the IANA data can change. Writing the date once means a later DST update does not move the spark to another day. Chicago and Amsterdam are the demo. v1 keeps the same rule for any combination of zones.',
+    'At insert, Pleck stores author_timezone (an IANA name) and sets author_local_date with localDate(instant, zone). Postgres cannot do that in a GENERATED column. AT TIME ZONE is STABLE, and generated columns require IMMUTABLE, because the IANA data can change. Writing the date once means a later DST update does not move the spark to another day. Chicago and Amsterdam timezones are the demo. v1 keeps the same rule for any combination of zones.',
   renderRule:
-    'A stamp uses the reader\u2019s language (Intl.DateTimeFormat, English or Dutch) and the author\u2019s clock. When the two local dates differ, the reader\u2019s own time is shown underneath.',
+    'A stamp uses the reader\u2019s language (Intl.DateTimeFormat, English or Dutch) and the author\u2019s clock.',
   sparks: [
     {
       id: 'femke-monday',
@@ -134,7 +129,7 @@ export const whoseDay = {
       stamps: {
         simon: {
           headline: 'Femke · Monday 12:30 AM · Amsterdam',
-          subtext: 'Sunday 5:30 PM',
+          subtext: null,
         },
         femke: {
           headline: 'Femke · maandag 00:30',
@@ -158,7 +153,7 @@ export const whoseDay = {
         },
         femke: {
           headline: 'Simon · zondag 18:55 · Chicago',
-          subtext: 'maandag 01:55',
+          subtext: null,
         },
       },
     },
@@ -179,15 +174,15 @@ export const whoseDay = {
   ],
   perspectives: {
     simon:
-      'Monday is above Sunday. In Des Moines it is still Sunday evening. Femke\u2019s author_local_date is Monday, so her row sorts first.',
+      "It's Sunday evening in Des Moines. Femke\u2019s stamp is Monday — the timestamp is followed up by 'Amsterdam' to indicate the timezone.",
     femke:
-      'Same two rows, in Dutch, still on his clock. His stamp stays Sunday. Under it, her clock reads Monday 01:55.',
+      "Same two rows, in Dutch. Simon's stamp stays Sunday — the timestamp is followed up by 'Chicago' to indicate the timezone.",
   },
 } as const
 
 export const feedIndex = {
   name: 'sparks_feed_idx',
-  why: 'OFFSET shifts when a row is inserted above the page. author_local_date also does not follow UTC order, so a Monday in Amsterdam can sort above a Sunday in Des Moines. The cursor is the tuple (author_local_date, created_at, id).',
+  why: 'OFFSET can skip or repeat a row when a new post lands above the screen. The next load starts after the last row shown.',
   definition: `CREATE INDEX sparks_feed_idx
   ON sparks (circle_id, author_local_date DESC, created_at DESC, id DESC)
   WHERE deleted_at IS NULL;`,
@@ -207,10 +202,9 @@ WHERE circle_id = $circle
 ORDER BY author_local_date DESC, created_at DESC, id DESC
 LIMIT $limit;`,
   cursorExample: {
-    authorLocalDate: '2026-06-15',
-    createdAt: '2026-06-14T22:30:00.000Z',
-    id: 'femke-monday',
-    note: 'The cursor is Femke\u2019s Monday row. The next page is everything strictly after it, so Simon\u2019s Sunday row comes first.',
+    lead: 'Femke posted earlier in UTC. Her Monday still loads first.',
+    mark: 'cursor',
+    after: 'The cursor is this row. The next load starts after it.',
   },
 } as const
 
@@ -295,10 +289,11 @@ export type PleckTabId = (typeof pleckTabs)[number]['id']
 export const portfolioMeta = {
   name: 'simonflohr.dev',
   url: site.url,
+  repoName: 'portfolio',
+  repoUrl: 'https://github.com/SimonFlohr/portfolio',
   summary:
-    'A Vite and React SPA. The Pleck section switches the reader, steps a keyset cursor, and walks the upload. ⌘K opens the command palette. The pre-push hook runs pnpm verify, and GitHub Actions runs the same script.',
+    'A Vite and React SPA. The Pleck section switches the reader, shows two feed loads, and walks the upload. ⌘K opens the command palette. The pre-push hook runs pnpm verify, and GitHub Actions runs the same script.',
   stack: ['React', 'TypeScript', 'Vite', 'Tailwind CSS', 'Motion', 'GitHub Actions'],
-  lighthouseTarget: 100,
   shortcuts: ['⌘K'],
   ci: {
     workflow: '.github/workflows/ci.yml',
@@ -351,21 +346,20 @@ export const skillGroups = [
   },
 ] as const
 
-/** Oldest first. The timeline renders this order along a scroll-linked line. */
 export const timeline = [
   {
     id: 'bs',
-    when: 'B.S.',
+    when: 'January 2025',
     title: 'B.S. Software Engineering',
     place: 'Western Governors University',
-    body: 'The degree before the M.S.',
+    body: 'Most of this was building software and then testing it: APIs, databases, security, and getting a deploy out.',
   },
   {
     id: 'ms',
     when: 'April 2026',
     title: 'M.S. Software Engineering',
     place: 'Western Governors University',
-    body: 'Graduated April 2026. I\u2019m looking for a full-time software engineering role, remote or in Des Moines.',
+    body: 'This was design and architecture. Requirements, testing, and how the pieces of a system fit.',
   },
   {
     id: 'systems',

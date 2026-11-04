@@ -13,6 +13,7 @@ import {
   type PleckTabId,
   type ReaderId,
 } from '../data/portfolioData'
+import { CiBadge } from './ui/CiBadge'
 import { RevealOnScroll } from './ui/RevealOnScroll'
 
 const sparkById = new Map(whoseDay.sparks.map((spark) => [spark.id, spark]))
@@ -36,10 +37,17 @@ export function PleckShowcase() {
         <RevealOnScroll>
           <p className="font-mono text-xs tracking-[0.18em] text-frost-1 uppercase">Case study</p>
           <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-            <h2 className="text-4xl font-medium tracking-tight text-snow-0 sm:text-5xl">
-              {pleck.name}
-            </h2>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <h2 className="text-4xl font-medium tracking-tight text-snow-0 sm:text-5xl">
+                {pleck.name}
+              </h2>
+              <CiBadge
+                repo="pleck-web"
+                actionsHref={`${pleck.repoUrl}/actions`}
+                label="Live CI status for pleck-web on GitHub Actions"
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:ml-auto sm:justify-end">
               <a
                 href={pleck.repoUrl}
                 target="_blank"
@@ -229,13 +237,7 @@ function TimezoneSimulator() {
                 <h3 className="font-mono text-xs tracking-wide text-snow-0 uppercase">
                   {group.labels[reader]}
                 </h3>
-                <span
-                  className={
-                    group.relative[reader] === 'Tomorrow'
-                      ? 'font-mono text-[10px] tracking-wide text-aurora-yellow uppercase'
-                      : 'font-mono text-[10px] tracking-wide text-snow-2 uppercase'
-                  }
-                >
+                <span className={'font-mono text-[10px] tracking-wide text-snow-2 uppercase'}>
                   {group.relative[reader]}
                 </span>
               </div>
@@ -282,9 +284,9 @@ function TimezoneSimulator() {
 function KeysetTrigram() {
   const [column, setColumn] = useState(1)
   const [query, setQuery] = useState<string>(trigramSearch.query)
-  const [cursorOn, setCursorOn] = useState(false)
   const selected = feedIndex.columns[column]
   const cursor = feedIndex.cursorExample
+  const [first, second] = [...whoseDay.sparks].sort(compareFeedDesc)
 
   return (
     <div className="grid min-w-0 gap-4 lg:grid-cols-2">
@@ -323,50 +325,24 @@ function KeysetTrigram() {
 
       <div className="min-w-0 space-y-4">
         <div className="rounded-2xl border border-snow-0/10 bg-polar-1/30 p-5">
-          <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-[11px] tracking-wide text-frost-1 uppercase">
-              Keyset cursor
-            </p>
-            <button
-              type="button"
-              className="inline-flex min-h-11 items-center rounded-full border border-snow-0/15 px-3 font-mono text-[11px] text-snow-1 hover:border-frost-1/40 hover:text-snow-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-frost-1"
-              onClick={() => setCursorOn((on) => !on)}
-            >
-              {cursorOn ? 'Reset cursor' : 'Step the cursor'}
-            </button>
-          </div>
-          <p className="mt-3 font-mono text-[11px] text-snow-1">{feedIndex.comparison}</p>
-          <ul className="mt-3 space-y-2">
-            {whoseDay.sparks.map((spark) => {
-              const included = cursorOn && isBeforeCursor(spark, cursor)
-              const boundary = cursorOn && spark.id === cursor.id
-              return (
-                <li
-                  key={spark.id}
-                  className={
-                    included
-                      ? 'rounded-xl border border-frost-1/40 bg-frost-3/15 px-3 py-2'
-                      : 'rounded-xl border border-snow-0/10 bg-polar-0/45 px-3 py-2'
-                  }
-                >
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="font-mono text-xs text-snow-0">{spark.author}</span>
-                    <span className="font-mono text-[10px] text-snow-2">
-                      {boundary ? 'cursor' : included ? 'next page' : 'this page'}
-                    </span>
-                  </div>
-                  <p className="mt-1 font-mono text-[11px] text-snow-2">
-                    {spark.authorLocalDate} · {spark.createdAt} · {spark.id}
-                  </p>
-                </li>
-              )
-            })}
-          </ul>
-          <p className="mt-3 text-sm leading-relaxed text-snow-2">
-            {cursorOn
-              ? cursor.note
-              : 'Both sparks are on the first page. Step the cursor to leave it on Femke’s Monday row. Simon’s Sunday row is the next page.'}
+          <p className="font-mono text-[11px] tracking-wide text-frost-1 uppercase">
+            Keyset cursor
           </p>
+          <p className="mt-3 text-sm leading-relaxed text-snow-2">{cursor.lead}</p>
+          <div className="mt-4">
+            <p className="font-mono text-[10px] tracking-wide text-snow-2 uppercase">First load</p>
+            {first ? <FeedLoadRow spark={first} mark={cursor.mark} /> : null}
+          </div>
+          <div className="mt-4 border-l border-aurora-yellow/50 pl-3">
+            <p className="text-sm leading-relaxed text-snow-1">{cursor.after}</p>
+            <p className="mt-1 overflow-x-auto font-mono text-[11px] text-snow-2">
+              {feedIndex.comparison}
+            </p>
+            <p className="mt-4 font-mono text-[10px] tracking-wide text-snow-2 uppercase">
+              Next load
+            </p>
+            {second ? <FeedLoadRow spark={second} /> : null}
+          </div>
         </div>
 
         <div className="rounded-2xl border border-snow-0/10 bg-polar-1/30 p-5">
@@ -421,15 +397,47 @@ function KeysetTrigram() {
   )
 }
 
-function isBeforeCursor(
-  spark: { authorLocalDate: string; createdAt: string; id: string },
-  cursor: { authorLocalDate: string; createdAt: string; id: string },
-) {
-  if (spark.authorLocalDate !== cursor.authorLocalDate) {
-    return spark.authorLocalDate < cursor.authorLocalDate
+type KeysetTuple = { authorLocalDate: string; createdAt: string; id: string }
+
+function compareKeyset(left: KeysetTuple, right: KeysetTuple) {
+  if (left.authorLocalDate !== right.authorLocalDate) {
+    return left.authorLocalDate < right.authorLocalDate ? -1 : 1
   }
-  if (spark.createdAt !== cursor.createdAt) return spark.createdAt < cursor.createdAt
-  return spark.id < cursor.id
+  if (left.createdAt !== right.createdAt) return left.createdAt < right.createdAt ? -1 : 1
+  if (left.id !== right.id) return left.id < right.id ? -1 : 1
+  return 0
+}
+
+function compareFeedDesc(left: KeysetTuple, right: KeysetTuple) {
+  return compareKeyset(right, left)
+}
+
+function FeedLoadRow({ spark, mark }: { spark: (typeof whoseDay.sparks)[number]; mark?: string }) {
+  const day =
+    whoseDay.dayGroups.find((group) => group.authorLocalDate === spark.authorLocalDate)?.labels
+      .simon ?? spark.authorLocalDate
+
+  return (
+    <div
+      className={
+        mark
+          ? 'mt-2 rounded-xl border border-aurora-yellow/50 bg-aurora-yellow/10 px-3 py-2'
+          : 'mt-2 rounded-xl border border-frost-1/40 bg-frost-3/15 px-3 py-2'
+      }
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="font-mono text-xs text-snow-0">{spark.author}</span>
+        {mark ? (
+          <span className="font-mono text-[10px] tracking-wide text-aurora-yellow uppercase">
+            {mark}
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-1 font-mono text-[11px] text-snow-2">
+        {day} · {spark.createdAt.slice(11, 16)} UTC
+      </p>
+    </div>
+  )
 }
 
 function highlight(text: string, query: string) {
@@ -464,7 +472,7 @@ function VaultPipeline() {
     if (reduce || paused) return
     const timer = window.setInterval(() => {
       setStep((current) => (current + 1) % vaultPipeline.length)
-    }, 2200)
+    }, 5000)
     return () => window.clearInterval(timer)
   }, [paused, reduce])
 

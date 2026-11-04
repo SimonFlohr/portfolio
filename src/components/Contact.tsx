@@ -64,7 +64,7 @@ export function Contact() {
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-snow-2">{site.description}</p>
           <p className="mt-3 font-mono text-xs tracking-wide text-snow-2 uppercase">
-            {site.location} · {site.workModes.join(' · ')} · {site.availability}
+            {site.location} · {site.availability}
           </p>
         </RevealOnScroll>
 
