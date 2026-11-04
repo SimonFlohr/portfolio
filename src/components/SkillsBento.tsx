@@ -4,6 +4,25 @@ import { RevealOnScroll } from './ui/RevealOnScroll'
 
 const spans = ['lg:col-span-4', 'lg:col-span-8', 'lg:col-span-12'] as const
 
+type SkillName = (typeof skillGroups)[number]['items'][number]['name']
+
+const skillTone: Record<SkillName, string> = {
+  TypeScript: 'bg-frost-2/25 text-frost-2 ring-frost-2/55',
+  JavaScript: 'bg-aurora-yellow/15 text-aurora-yellow ring-aurora-yellow/40',
+  SQL: 'bg-aurora-green/15 text-aurora-green ring-aurora-green/40',
+  PostgreSQL: 'bg-frost-0/15 text-frost-0 ring-frost-0/40',
+  'Drizzle ORM': 'bg-aurora-purple/15 text-aurora-purple ring-aurora-purple/40',
+  'AWS S3': 'bg-aurora-red/15 text-aurora-red ring-aurora-red/40',
+  'Node.js': 'bg-frost-2/20 text-frost-2 ring-frost-2/45',
+  Clerk: 'bg-aurora-yellow/10 text-aurora-yellow ring-aurora-yellow/30',
+  React: 'bg-frost-1/15 text-frost-1 ring-frost-1/40',
+  'Next.js 16': 'bg-snow-0/10 text-snow-0 ring-snow-0/30',
+  'Tailwind CSS': 'bg-frost-0/20 text-frost-0 ring-frost-0/45',
+  Motion: 'bg-aurora-purple/20 text-aurora-purple ring-aurora-purple/45',
+  'GitHub Actions': 'bg-aurora-red/10 text-aurora-red ring-aurora-red/35',
+  'Linux / macOS': 'bg-aurora-green/10 text-aurora-green ring-aurora-green/30',
+}
+
 const ringMask = 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)'
 
 function glowStyle(padding: string, radius: number, alpha: number) {
@@ -47,8 +66,12 @@ export function SkillsBento() {
               >
                 {group.items.map((item) => (
                   <li key={item.name}>
-                    <p className="text-sm text-snow-0">{item.name}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-snow-2">{item.detail}</p>
+                    <p
+                      className={`w-fit max-w-full rounded-md px-2 py-0.5 font-mono text-[13px] ring-1 ${skillTone[item.name]}`}
+                    >
+                      {item.name}
+                    </p>
+                    <p className="mt-1.5 text-sm leading-relaxed text-snow-2">{item.detail}</p>
                   </li>
                 ))}
               </ul>

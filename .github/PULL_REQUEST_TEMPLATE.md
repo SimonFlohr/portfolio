@@ -32,7 +32,6 @@
 
 ### Performance
 
-- [ ] Lighthouse spot-check run (Performance / Accessibility / Best Practices / SEO)
 - [ ] No new heavy dependencies (or justified below)
 
 ## Notes

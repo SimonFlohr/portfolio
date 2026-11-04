@@ -18,7 +18,7 @@ export function Timeline() {
           Engineering & education
         </h2>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-snow-2">
-          B.S. in Software Engineering, then the M.S. in April 2026, then Pleck and this site.
+          How I got where I am today.
         </p>
 
         <div className="relative mt-12">

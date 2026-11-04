@@ -76,10 +76,13 @@ export function AuthorClock({ density = 'full', className }: AuthorClockProps) {
   }
 
   return (
-    <div className={className}>
-      <p className="font-mono text-[11px] leading-snug text-snow-0">
-        {simon.name}
-        <span className="whitespace-nowrap text-snow-1"> · {authorLabel}</span>
+    <div className={`@container ${className ?? ''}`}>
+      <p className="font-mono text-[12px] leading-snug text-snow-0">
+        {site.name}
+        <span className="hidden @min-[12rem]:inline"> · </span>
+        <span className="block text-snow-1 @min-[12rem]:inline @min-[12rem]:whitespace-nowrap">
+          {authorLabel}
+        </span>
       </p>
       <p className="mt-1 font-mono text-[10px] tracking-[0.16em] text-snow-2 uppercase">
         {site.location}
