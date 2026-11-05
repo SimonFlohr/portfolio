@@ -46,7 +46,7 @@ export const pleck = {
   etymology: "Derived from the Dutch word 'plek', meaning a place or spot.",
   tagline: 'One family vault. Nothing lost.',
   summary:
-    'A private, invite-only PWA. The family in this case study lives in the US and the Netherlands. The UI is English and Dutch. Members add sparks, which are photos and text. The home page is a day-grouped feed with search, and filters can be shared as a URL. v1 will open Pleck to families anywhere, in any combination of time zones.',
+    'A private, invite-only family vault. A members row has to exist before Clerk can link a sign-in. The family in this case study lives in the US and the Netherlands. The UI is English and Dutch. Members add sparks, which are photos and text. The home page is a day-grouped feed with search, and the search is shared as a URL. The local-date rule is the author’s IANA zone, so it holds for any pair of zones.',
   mvpNote: 'Voice notes will be added in v1. They are not in this version.',
   stack: [
     'Next.js 16',
@@ -77,7 +77,7 @@ export const principles = [
     id: 'capture',
     index: '03',
     title: 'Save the metadata you cannot reconstruct',
-    body: 'At insert, Pleck stores the author time zone, the author\u2019s local date, the EXIF capture time (happened_at), a SHA-256 of the file, and the MIME type. S3 keeps versioned objects. Deleting an object sets deleted_at and leaves the object.',
+    body: 'At insert, Pleck stores the author time zone and the author\u2019s local date from the post instant. A photo also stores the EXIF capture time as happened_at, a SHA-256 of the uploaded bytes, and the MIME type. The server stores the hash the browser sends. happened_at does not choose the day. Deleting a spark sets deleted_at and leaves the S3 object.',
   },
 ] as const
 
@@ -113,62 +113,37 @@ export const whoseDay = {
   problem:
     'A spark posted at 6:55 PM in (America/Chicago) is 01:55 AM on Monday in (Europe/Amsterdam). Whose calendar day does it belong to?',
   solution:
-    'At insert, Pleck stores author_timezone (an IANA name) and sets author_local_date with localDate(instant, zone). Postgres cannot do that in a GENERATED column. AT TIME ZONE is STABLE, and generated columns require IMMUTABLE, because the IANA data can change. Writing the date once means a later DST update does not move the spark to another day. Chicago and Amsterdam timezones are the demo. v1 keeps the same rule for any combination of zones.',
+    'At insert, Pleck stores author_timezone (an IANA name) and sets author_local_date with localDate(instant, zone). Postgres cannot do that in a GENERATED column. AT TIME ZONE is STABLE, and generated columns require IMMUTABLE, because the IANA data can change. Writing the date once means a later DST update does not move the spark to another day. Chicago and Amsterdam are the demo. The stored zone is whatever IANA name is on the member.',
   renderRule:
-    'A stamp uses the reader\u2019s language (Intl.DateTimeFormat, English or Dutch) and the author\u2019s clock.',
+    'A stamp uses the reader\u2019s language (Intl.DateTimeFormat, English or Dutch) and the author\u2019s clock. The city suffix is the last segment of the IANA zone, so America/Chicago stamps as Chicago even though Simon lives in Des Moines.',
+  scenarioNow: '2026-06-14T23:55:00.000Z',
   sparks: [
     {
       id: 'femke-monday',
       author: 'Femke',
       authorZone: 'Europe/Amsterdam',
-      authorCity: 'Amsterdam',
       instant: '2026-06-15T00:30:00+02:00',
       authorLocalDate: '2026-06-15',
       createdAt: '2026-06-14T22:30:00.000Z',
       text: 'De tomaten in de tuin zijn eindelijk rood.',
-      stamps: {
-        simon: {
-          headline: 'Femke · Monday 12:30 AM · Amsterdam',
-          subtext: null,
-        },
-        femke: {
-          headline: 'Femke · maandag 00:30',
-          subtext: null,
-        },
-      },
     },
     {
       id: 'simon-sunday',
       author: 'Simon',
       authorZone: 'America/Chicago',
-      authorCity: 'Chicago',
       instant: '2026-06-14T18:55:00-05:00',
       authorLocalDate: '2026-06-14',
       createdAt: '2026-06-14T23:55:00.000Z',
       text: 'Sunday dinner. The tomatoes from the garden finally turned.',
-      stamps: {
-        simon: {
-          headline: 'Simon · Sunday 6:55 PM',
-          subtext: null,
-        },
-        femke: {
-          headline: 'Simon · zondag 18:55 · Chicago',
-          subtext: null,
-        },
-      },
     },
   ],
   dayGroups: [
     {
       authorLocalDate: '2026-06-15',
-      labels: { simon: 'Monday', femke: 'maandag' },
-      relative: { simon: 'Tomorrow', femke: 'Vandaag' },
       sparkIds: ['femke-monday'],
     },
     {
       authorLocalDate: '2026-06-14',
-      labels: { simon: 'Sunday', femke: 'zondag' },
-      relative: { simon: 'Today', femke: 'Gisteren' },
       sparkIds: ['simon-sunday'],
     },
   ],
@@ -183,24 +158,43 @@ export const whoseDay = {
 export const feedIndex = {
   name: 'sparks_feed_idx',
   why: 'OFFSET can skip or repeat a row when a new post lands above the screen. The next load starts after the last row shown.',
+  scan: 'The index is stored ascending. The query orders descending, and Postgres walks that btree backward. Page size is 15. The statement asks for 16 so one extra row means another page.',
   definition: `CREATE INDEX sparks_feed_idx
-  ON sparks (circle_id, author_local_date DESC, created_at DESC, id DESC)
+  ON sparks USING btree (circle_id, author_local_date, created_at, id)
   WHERE deleted_at IS NULL;`,
   columns: [
-    { name: 'circle_id', direction: 'ASC', role: 'The query is for one circle.' },
-    { name: 'author_local_date', direction: 'DESC', role: 'Author\u2019s frozen local day.' },
-    { name: 'created_at', direction: 'DESC', role: 'Tie-break inside a day.' },
-    { name: 'id', direction: 'DESC', role: 'Final unique tie-break.' },
+    { name: 'circle_id', direction: 'ASC', role: 'Equality. The query is for one circle.' },
+    {
+      name: 'author_local_date',
+      direction: 'ASC',
+      role: 'Stored ascending. The query orders this column DESC.',
+    },
+    {
+      name: 'created_at',
+      direction: 'ASC',
+      role: 'Stored ascending. The query orders this column DESC, inside a day.',
+    },
+    {
+      name: 'id',
+      direction: 'ASC',
+      role: 'Stored ascending. The query orders this column DESC, as the last tie-break.',
+    },
   ],
   predicate: 'deleted_at IS NULL',
   comparison: '(author_local_date, created_at, id) < ($1, $2, $3)',
-  query: `SELECT id, author_local_date, created_at, text_content
-FROM sparks
-WHERE circle_id = $circle
-  AND deleted_at IS NULL
-  AND (author_local_date, created_at, id) < ($1, $2, $3)
-ORDER BY author_local_date DESC, created_at DESC, id DESC
-LIMIT $limit;`,
+  query: `SELECT s.id, s.type, s.text_content,
+       s.author_member_id, m.display_name, m.avatar_url,
+       s.author_timezone, s.author_local_date, s.created_at,
+       s.media_key, s.media_mime
+FROM sparks s
+JOIN members m ON m.id = s.author_member_id
+WHERE s.circle_id = $circle
+  AND s.deleted_at IS NULL
+  AND ($cursor IS NULL OR (s.author_local_date, s.created_at, s.id)
+                         < ($d::date, $c::timestamptz, $i))
+  AND ($q IS NULL OR s.text_content ILIKE '%' || $escaped || '%')
+ORDER BY s.author_local_date DESC, s.created_at DESC, s.id DESC
+LIMIT 16;`,
   cursorExample: {
     lead: 'Femke posted earlier in UTC. Her Monday still loads first.',
     mark: 'cursor',
@@ -212,7 +206,7 @@ export const trigramSearch = {
   extension: 'pg_trgm',
   operatorClass: 'gin_trgm_ops',
   column: 'text_content',
-  why: 'pg_trgm splits text into three-character pieces. The query tomat is inside both Dutch tomaten and English tomatoes, and ILIKE can use the GIN index.',
+  why: 'pg_trgm splits text into three-character pieces. The query tomat is inside both Dutch tomaten and English tomatoes, and ILIKE can use the GIN index. The highlight below is that substring. It is not a similarity rank.',
   definition: `CREATE INDEX sparks_text_trgm_idx
   ON sparks USING gin (text_content gin_trgm_ops);`,
   query: 'tomat',
@@ -243,23 +237,24 @@ export const vaultPipeline = [
     id: 'prepare',
     title: 'EXIF, fingerprint, compress',
     detail:
-      'prepare-photo.ts reads happened_at from EXIF, hashes the file with SHA-256, and compresses it before upload.',
+      'The browser reads EXIF from the original and compresses in parallel. SHA-256 is of the bytes that will be uploaded. happened_at is stored later and does not choose the day.',
   },
   {
     id: 'sign',
     title: 'Presigned PUT',
-    detail: 'Next.js 16 /api/upload returns a presigned PUT URL. The browser writes to S3.',
+    detail:
+      'POST /api/upload returns a presigned PUT that lasts five minutes. The signature includes Content-Type and does not include Content-Length. The browser writes to S3.',
   },
   {
     id: 'store',
-    title: 'Private versioned bucket',
-    detail:
-      'The bucket is private and versioned. A delete sets deleted_at. The object version stays.',
+    title: 'Private bucket',
+    detail: 'The bucket is private. Deleting a spark sets deleted_at. The object stays.',
   },
   {
     id: 'render',
     title: 'Presigned GET',
-    detail: 'The feed requests a short-lived presigned GET. The bucket stays private.',
+    detail:
+      'The feed mints a presigned GET that lasts 15 minutes. Keys under demo/ are same-origin paths, not S3.',
   },
 ] as const
 
@@ -321,9 +316,15 @@ export const skillGroups = [
     items: [
       { name: 'PostgreSQL', detail: 'Neon. pg_trgm for Dutch and English substring search.' },
       { name: 'Drizzle ORM', detail: 'Pleck\u2019s schema and queries.' },
-      { name: 'AWS S3', detail: 'Private versioned bucket. Presigned PUT and GET.' },
+      {
+        name: 'AWS S3',
+        detail: 'Private bucket. Presigned PUT and GET. A delete leaves the object.',
+      },
       { name: 'Node.js', detail: 'Next.js 16. /api/upload returns the presigned PUT.' },
-      { name: 'Clerk', detail: 'Invite-only sign-in for Pleck.' },
+      {
+        name: 'Clerk',
+        detail: 'Sign-in is Clerk. Membership is a members row that has to exist first.',
+      },
     ],
   },
   {
