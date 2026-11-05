@@ -17,6 +17,54 @@ import { CiBadge } from './ui/CiBadge'
 import { RevealOnScroll } from './ui/RevealOnScroll'
 
 const sparkById = new Map(whoseDay.sparks.map((spark) => [spark.id, spark]))
+const DAY_MS = 86_400_000
+const SCENARIO_NOW = new Date(whoseDay.scenarioNow)
+
+type StampReader = { locale: string; zone: string }
+
+function zoneCity(timeZone: string) {
+  return (timeZone.split('/').pop() ?? timeZone).replace(/_/g, ' ')
+}
+
+function localDate(instant: Date, timeZone: string) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(instant)
+}
+
+function formatStamp(createdAtIso: string, authorTimezone: string, reader: StampReader) {
+  const time = new Intl.DateTimeFormat(reader.locale, {
+    weekday: 'long',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: authorTimezone,
+  }).format(new Date(createdAtIso))
+
+  return authorTimezone === reader.zone ? time : `${time} · ${zoneCity(authorTimezone)}`
+}
+
+function weekdayLabel(dateStr: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
+    weekday: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(`${dateStr}T00:00:00Z`))
+}
+
+function relativeWord(dateStr: string, reader: StampReader) {
+  const today = localDate(SCENARIO_NOW, reader.zone)
+  const date = new Date(`${dateStr}T00:00:00Z`)
+  const todayDate = new Date(`${today}T00:00:00Z`)
+  const diffDays = Math.round((date.getTime() - todayDate.getTime()) / DAY_MS)
+  if (Math.abs(diffDays) > 1) return weekdayLabel(dateStr, reader.locale)
+  const rel = new Intl.RelativeTimeFormat(reader.locale, { numeric: 'auto' }).format(
+    diffDays,
+    'day',
+  )
+  return rel.charAt(0).toUpperCase() + rel.slice(1)
+}
 
 export function PleckShowcase() {
   const reduce = useReducedMotion()
@@ -235,17 +283,17 @@ function TimezoneSimulator() {
             <div key={group.authorLocalDate}>
               <div className="mb-2 flex items-baseline justify-between gap-3">
                 <h3 className="font-mono text-xs tracking-wide text-snow-0 uppercase">
-                  {group.labels[reader]}
+                  {weekdayLabel(group.authorLocalDate, active.locale)}
                 </h3>
                 <span className={'font-mono text-[10px] tracking-wide text-snow-2 uppercase'}>
-                  {group.relative[reader]}
+                  {relativeWord(group.authorLocalDate, active)}
                 </span>
               </div>
               <div className="space-y-2">
                 {group.sparkIds.map((id) => {
                   const spark = sparkById.get(id)
                   if (!spark) return null
-                  const stamp = spark.stamps[reader]
+                  const stamp = `${spark.author} · ${formatStamp(spark.createdAt, spark.authorZone, active)}`
                   return (
                     <motion.article
                       key={spark.id}
@@ -260,12 +308,7 @@ function TimezoneSimulator() {
                           exit={reduce ? undefined : { opacity: 0, y: -6 }}
                           transition={{ duration: 0.18 }}
                         >
-                          <p className="font-mono text-[13px] text-snow-0">{stamp.headline}</p>
-                          {stamp.subtext ? (
-                            <p className="mt-1 font-mono text-[11px] text-snow-2">
-                              {stamp.subtext}
-                            </p>
-                          ) : null}
+                          <p className="font-mono text-[13px] text-snow-0">{stamp}</p>
                         </motion.div>
                       </AnimatePresence>
                       <p className="mt-2 text-sm leading-relaxed text-snow-2">{spark.text}</p>
@@ -320,6 +363,10 @@ function KeysetTrigram() {
         <p className="mt-2 font-mono text-[11px] text-aurora-green">WHERE {feedIndex.predicate}</p>
         <pre className="mt-4 overflow-x-auto rounded-xl bg-polar-0/70 p-3 font-mono text-[11px] leading-relaxed text-snow-2">
           {feedIndex.definition}
+        </pre>
+        <p className="mt-3 text-sm leading-relaxed text-snow-2">{feedIndex.scan}</p>
+        <pre className="mt-3 overflow-x-auto rounded-xl bg-polar-0/70 p-3 font-mono text-[11px] leading-relaxed text-snow-2">
+          {feedIndex.query}
         </pre>
       </div>
 
@@ -413,9 +460,7 @@ function compareFeedDesc(left: KeysetTuple, right: KeysetTuple) {
 }
 
 function FeedLoadRow({ spark, mark }: { spark: (typeof whoseDay.sparks)[number]; mark?: string }) {
-  const day =
-    whoseDay.dayGroups.find((group) => group.authorLocalDate === spark.authorLocalDate)?.labels
-      .simon ?? spark.authorLocalDate
+  const day = weekdayLabel(spark.authorLocalDate, 'en-US')
 
   return (
     <div
