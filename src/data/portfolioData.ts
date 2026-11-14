@@ -8,10 +8,10 @@ export const site = {
   availability: 'Available for local and remote SWE Roles',
   role: 'Software Engineer',
   roleFocus: ['Full-Stack', 'Frontend', 'Cloud'],
-  email: 'simonflohr31@gmail.com',
+  email: 'simonflohr@proton.me',
   github: 'https://github.com/SimonFlohr',
   linkedin: 'https://www.linkedin.com/in/simonflohr/',
-  resumeHref: '/resume.pdf',
+  resumeHref: '/simon-flohr-resume.pdf',
   description:
     'Software engineer in Des Moines. I built Pleck, a private family vault, and this site to show how it works.',
 } as const
