@@ -8,7 +8,7 @@ export const site = {
   availability: 'Available for local and remote SWE Roles',
   role: 'Software Engineer',
   roleFocus: ['Full-Stack', 'Frontend', 'Cloud'],
-  email: 'simonflohr@proton.me',
+  email: 'simon@simonflohr.dev',
   github: 'https://github.com/SimonFlohr',
   linkedin: 'https://www.linkedin.com/in/simonflohr/',
   resumeHref: '/simon-flohr-resume.pdf',
